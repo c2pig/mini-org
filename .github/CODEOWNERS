@@ -1,0 +1,19 @@
+# Global owners
+* @platform-team
+
+# Infrastructure changes require platform team approval
+/infrastructure/ @platform-team @devops-team
+
+# Kubernetes configurations
+/kubernetes/ @platform-team @sre-team
+
+# Documentation changes
+/docs/ @platform-team @tech-writers
+
+# CI/CD workflows
+/.github/ @platform-team @devops-team
+
+# Security-related files
+*.tf @platform-team @security-team
+*.yaml @platform-team @sre-team
+*.yml @platform-team @sre-team

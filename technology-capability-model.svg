@@ -1,0 +1,107 @@
+<svg viewBox="0 0 1400 1100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Title -->
+  <text x="700" y="30" text-anchor="middle" font-size="24" font-weight="bold">Technology Capability Model</text>
+  <text x="700" y="55" text-anchor="middle" font-size="14" font-style="italic">Managed Services First Approach</text>
+  
+  <!-- Edge & Security Capability -->
+  <g id="edge-security">
+    <rect x="50" y="80" width="1300" height="120" fill="#fee2e2" stroke="#dc2626" stroke-width="2" rx="10"/>
+    <text x="80" y="105" font-size="16" font-weight="bold">Edge & Security</text>
+    
+    <rect x="200" y="110" width="150" height="70" fill="#f87171" rx="5"/>
+    <text x="275" y="130" text-anchor="middle" fill="white" font-size="11" font-weight="bold">CDN</text>
+    <text x="275" y="148" text-anchor="middle" fill="white" font-size="9">Cloudflare (Free)</text>
+    <text x="275" y="165" text-anchor="middle" fill="white" font-size="9">Global Edge</text>
+    
+    <rect x="380" y="110" width="150" height="70" fill="#f87171" rx="5"/>
+    <text x="455" y="130" text-anchor="middle" fill="white" font-size="11" font-weight="bold">WAF</text>
+    <text x="455" y="148" text-anchor="middle" fill="white" font-size="9">Cloudflare WAF</text>
+    <text x="455" y="165" text-anchor="middle" fill="white" font-size="9">DDoS Protection</text>
+    
+    <rect x="560" y="110" width="150" height="70" fill="#f87171" rx="5"/>
+    <text x="635" y="130" text-anchor="middle" fill="white" font-size="11" font-weight="bold">Zero Trust</text>
+    <text x="635" y="148" text-anchor="middle" fill="white" font-size="9">CF Access</text>
+    <text x="635" y="165" text-anchor="middle" fill="white" font-size="9">Device Trust</text>
+    
+    <rect x="740" y="110" width="150" height="70" fill="#f87171" rx="5"/>
+    <text x="815" y="130" text-anchor="middle" fill="white" font-size="11" font-weight="bold">API Gateway</text>
+    <text x="815" y="148" text-anchor="middle" fill="white" font-size="9">CF API Gateway</text>
+    <text x="815" y="165" text-anchor="middle" fill="white" font-size="9">Rate Limiting</text>
+    
+    <rect x="920" y="110" width="150" height="70" fill="#f87171" rx="5"/>
+    <text x="995" y="130" text-anchor="middle" fill="white" font-size="11" font-weight="bold">SSL/TLS</text>
+    <text x="995" y="148" text-anchor="middle" fill="white" font-size="9">Auto SSL</text>
+    <text x="995" y="165" text-anchor="middle" fill="white" font-size="9">Edge Certificates</text>
+    
+    <rect x="1100" y="110" width="150" height="70" fill="#f87171" rx="5"/>
+    <text x="1175" y="130" text-anchor="middle" fill="white" font-size="11" font-weight="bold">Bot Protection</text>
+    <text x="1175" y="148" text-anchor="middle" fill="white" font-size="9">CF Bot Mgmt</text>
+    <text x="1175" y="165" text-anchor="middle" fill="white" font-size="9">Challenge Pages</text>
+  </g>
+  
+  <!-- Identity & Access Management -->
+  <g id="iam">
+    <rect x="50" y="220" width="1300" height="120" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" rx="10"/>
+    <text x="80" y="245" font-size="16" font-weight="bold">Identity & Access Management</text>
+    
+    <rect x="200" y="250" width="180" height="70" fill="#fb923c" rx="5"/>
+    <text x="290" y="270" text-anchor="middle" fill="white" font-size="11" font-weight="bold">Workforce IAM</text>
+    <text x="290" y="288" text-anchor="middle" fill="white" font-size="9">Okta (Free 1k MAU)</text>
+    <text x="290" y="305" text-anchor="middle" fill="white" font-size="9">SSO, MFA, SCIM</text>
+    
+    <rect x="410" y="250" width="180" height="70" fill="#fb923c" rx="5"/>
+    <text x="500" y="270" text-anchor="middle" fill="white" font-size="11" font-weight="bold">Customer IAM</text>
+    <text x="500" y="288" text-anchor="middle" fill="white" font-size="9">Auth0 (7k MAU Free)</text>
+    <text x="500" y="305" text-anchor="middle" fill="white" font-size="9">Social, Passwordless</text>
+    
+    <rect x="620" y="250" width="180" height="70" fill="#fb923c" rx="5"/>
+    <text x="710" y="270" text-anchor="middle" fill="white" font-size="11" font-weight="bold">API Security</text>
+    <text x="710" y="288" text-anchor="middle" fill="white" font-size="9">JWT/OAuth2</text>
+    <text x="710" y="305" text-anchor="middle" fill="white" font-size="9">API Keys</text>
+    
+    <rect x="830" y="250" width="180" height="70" fill="#fb923c" rx="5"/>
+    <text x="920" y="270" text-anchor="middle" fill="white" font-size="11" font-weight="bold">RBAC/Permissions</text>
+    <text x="920" y="288" text-anchor="middle" fill="white" font-size="9">Fine-grained Access</text>
+    <text x="920" y="305" text-anchor="middle" fill="white" font-size="9">Policy Engine</text>
+    
+    <rect x="1040" y="250" width="180" height="70" fill="#fb923c" rx="5"/>
+    <text x="1130" y="270" text-anchor="middle" fill="white" font-size="11" font-weight="bold">Directory Services</text>
+    <text x="1130" y="288" text-anchor="middle" fill="white" font-size="9">Google Workspace</text>
+    <text x="1130" y="305" text-anchor="middle" fill="white" font-size="9">Azure AD</text>
+  </g>
+  
+  <!-- Infrastructure & Platform -->
+  <g id="infrastructure">
+    <rect x="50" y="360" width="1300" height="120" fill="#e0f2fe" stroke="#0284c7" stroke-width="2" rx="10"/>
+    <text x="80" y="385" font-size="16" font-weight="bold">Infrastructure & Platform</text>
+    
+    <rect x="200" y="390" width="150" height="70" fill="#0ea5e9" rx="5"/>
+    <text x="275" y="410" text-anchor="middle" fill="white" font-size="11" font-weight="bold">Cloud Provider</text>
+    <text x="275" y="428" text-anchor="middle" fill="white" font-size="9">AWS (Free Tier)</text>
+    <text x="275" y="445" text-anchor="middle" fill="white" font-size="9">Multi-Region</text>
+    
+    <rect x="380" y="390" width="150" height="70" fill="#0ea5e9" rx="5"/>
+    <text x="455" y="410" text-anchor="middle" fill="white" font-size="11" font-weight="bold">Container Platform</text>
+    <text x="455" y="428" text-anchor="middle" fill="white" font-size="9">EKS (Managed)</text>
+    <text x="455" y="445" text-anchor="middle" fill="white" font-size="9">Fargate Serverless</text>
+    
+    <rect x="560" y="390" width="150" height="70" fill="#0ea5e9" rx="5"/>
+    <text x="635" y="410" text-anchor="middle" fill="white" font-size="11" font-weight="bold">IaC</text>
+    <text x="635" y="428" text-anchor="middle" fill="white" font-size="9">Terraform Cloud</text>
+    <text x="635" y="445" text-anchor="middle" fill="white" font-size="9">GitOps (ArgoCD)</text>
+    
+    <rect x="740" y="390" width="150" height="70" fill="#0ea5e9" rx="5"/>
+    <text x="815" y="410" text-anchor="middle" fill="white" font-size="11" font-weight="bold">Serverless</text>
+    <text x="815" y="428" text-anchor="middle" fill="white" font-size="9">Lambda/Functions</text>
+    <text x="815" y="445" text-anchor="middle" fill="white" font-size="9">API Gateway</text>
+    
+    <rect x="920" y="390" width="150" height="70" fill="#0ea5e9" rx="5"/>
+    <text x="995" y="410" text-anchor="middle" fill="white" font-size="11" font-weight="bold">CI/CD</text>
+    <text x="995" y="428" text-anchor="middle" fill="white" font-size="9">GitHub Actions</text>
+    <text x="995" y="445" text-anchor="middle" fill="white" font-size="9">GitLab CI</text>
+    
+    <rect x="1100" y="390" width="150" height="70" fill="#0ea5e9" rx="5"/>
+    <text x="1175" y="410" text-anchor="middle" fill="white" font-size="11" font-weight="bold">Service Mesh</text>
+    <text x="1175" y="428" text-anchor="middle" fill="white" font-size="9">Istio (Optional)</text>
+    <text x="1175" y="445" text-anchor="middle" fill="white" font-size="9">App Mesh</text>
+    
