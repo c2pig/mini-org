@@ -1,0 +1,62 @@
+apiVersion: iam.mini-org.com/v1
+kind: Application
+metadata:
+  name: segment
+  displayName: "Segment.io"
+  description: "Customer data platform and analytics"
+spec:
+  type: saml
+  provider: okta
+  config:
+    entityId: "segment.io"
+    ssoUrl: "https://app.segment.com/login/sso/saml"
+    audienceRestriction: "segment.io"
+    nameIdFormat: "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
+    signatureAlgorithm: "RSA_SHA256"
+    acsUrl: "https://app.segment.com/login/sso/saml/consume"
+  attributeMapping:
+    email: "user.email"
+    firstName: "user.firstName"
+    lastName: "user.lastName"
+    role: "user.segmentRole"
+  roleMapping:
+    admin:
+      segmentRole: "Owner"
+      permissions:
+        - "workspace:admin"
+        - "source:admin"
+        - "destination:admin"
+        - "tracking-plan:admin"
+        - "billing:admin"
+    developer:
+      segmentRole: "Source Admin"
+      permissions:
+        - "source:admin"
+        - "destination:edit"
+        - "tracking-plan:edit"
+        - "debugger:read"
+    operator:
+      segmentRole: "Viewer"
+      permissions:
+        - "source:read"
+        - "destination:read"
+        - "debugger:read"
+        - "schema:read"
+    read-only:
+      segmentRole: "Viewer"
+      permissions:
+        - "workspace:read"
+        - "source:read"
+        - "destination:read"
+    emergency:
+      segmentRole: "Owner"
+      permissions:
+        - "*:*"
+      requiresApproval: true
+  security:
+    enforceSSO: true
+    sessionTimeout: "8h"
+    requireMFA: true
+  workspaceSettings:
+    defaultWorkspace: "mini-org-production"
+    autoProvision: true

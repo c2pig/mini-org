@@ -1,0 +1,53 @@
+apiVersion: iam.mini-org.com/v1
+kind: User
+metadata:
+  name: emergency.admin
+  environment: production
+  createdBy: security-team
+  createdAt: "2024-01-15T10:00:00Z"
+  labels:
+    emergency-access: "true"
+    requires-approval: "true"
+spec:
+  profile:
+    firstName: Emergency
+    lastName: Admin
+    email: emergency.admin@mini-org.com
+    department: Security
+    title: Emergency Access Account
+    employeeId: "EMERGENCY001"
+    manager: "security@mini-org.com"
+    startDate: "2024-01-15"
+    description: "Break-glass emergency access account"
+  roles:
+    - privileged-access
+  groups:
+    - emergency-admins
+    - break-glass-users
+  applications:
+    - cloudflare-emergency
+    - databricks-emergency
+    - segment-emergency
+    - oracle-emergency
+  accessPolicy:
+    mfaRequired: true
+    sessionTimeout: 2h  # Short session for emergency access
+    requiresApproval: true
+    approvers:
+      - "john.doe@mini-org.com"
+      - "security@mini-org.com"
+    ipRestrictions:
+      - "10.0.0.0/8"  # VPN range only
+    allowedTimeframes:
+      - "monday-sunday:00:00-23:59"  # Available 24/7 for emergencies
+    autoExpiry: 24h  # Access automatically expires
+    justificationRequired: true
+  notifications:
+    accessGranted: true
+    accessRevoked: true
+    emergencyUsage: true
+    complianceReports: true
+  auditSettings:
+    logAllActions: true
+    realTimeMonitoring: true
+    alertOnUsage: true

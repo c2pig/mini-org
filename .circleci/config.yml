@@ -1,0 +1,221 @@
+version: 2.1
+
+orbs:
+  terraform: circleci/terraform@3.2.1
+  slack: circleci/slack@4.12.5
+
+executors:
+  terraform-executor:
+    docker:
+      - image: hashicorp/terraform:1.6
+    working_directory: ~/project
+  python-executor:
+    docker:
+      - image: cimg/python:3.11
+    working_directory: ~/project
+
+jobs:
+  validate-iam-configs:
+    executor: python-executor
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            pip install pyyaml jsonschema
+      - run:
+          name: Validate user configurations
+          command: |
+            python packages/iam/scripts/validate-config.py --path packages/iam/configs/users/
+      - run:
+          name: Validate application configurations
+          command: |
+            python packages/iam/scripts/validate-config.py --path packages/iam/configs/applications/
+      - run:
+          name: Check for policy violations
+          command: |
+            python packages/iam/scripts/validate-config.py --check-policies
+
+  terraform-plan-okta:
+    executor: terraform-executor
+    steps:
+      - checkout
+      - terraform/install:
+          terraform_version: "1.6.0"
+      - terraform/init:
+          path: packages/iam/terraform/okta
+      - terraform/validate:
+          path: packages/iam/terraform/okta
+      - terraform/plan:
+          path: packages/iam/terraform/okta
+          var_file: "environments/${CIRCLE_BRANCH}.tfvars"
+      - store_artifacts:
+          path: packages/iam/terraform/okta/terraform.plan
+
+  terraform-apply-okta:
+    executor: terraform-executor
+    steps:
+      - checkout
+      - terraform/install:
+          terraform_version: "1.6.0"
+      - terraform/init:
+          path: packages/iam/terraform/okta
+      - terraform/apply:
+          path: packages/iam/terraform/okta
+          var_file: "environments/${CIRCLE_BRANCH}.tfvars"
+      - slack/notify:
+          event: always
+          template: basic_success_1
+          mentions: '@iam-team'
+
+  sync-okta-users:
+    executor: python-executor
+    steps:
+      - checkout
+      - run:
+          name: Install Okta SDK
+          command: |
+            pip install okta-sdk-python requests
+      - run:
+          name: Sync users to Okta
+          command: |
+            python packages/iam/scripts/provision-user.py --sync-all
+      - run:
+          name: Update group memberships
+          command: |
+            python packages/iam/scripts/sync-groups.py
+      - run:
+          name: Configure SSO applications
+          command: |
+            python packages/iam/scripts/configure-sso.py
+
+  security-scan:
+    executor: python-executor
+    steps:
+      - checkout
+      - run:
+          name: Install security tools
+          command: |
+            pip install bandit safety
+      - run:
+          name: Scan IAM scripts for security issues
+          command: |
+            bandit -r packages/iam/scripts/
+      - run:
+          name: Check for vulnerable dependencies
+          command: |
+            safety check --json
+
+  generate-compliance-report:
+    executor: python-executor
+    steps:
+      - checkout
+      - run:
+          name: Generate access review report
+          command: |
+            python packages/iam/scripts/compliance-report.py --output reports/access-review.html
+      - store_artifacts:
+          path: reports/
+      - slack/notify:
+          event: always
+          template: basic_success_1
+          channel: '#compliance'
+
+workflows:
+  iam-pipeline:
+    jobs:
+      # Always run validation on every commit
+      - validate-iam-configs:
+          filters:
+            branches:
+              only: /.*/
+      
+      # Security scan on every commit
+      - security-scan:
+          filters:
+            branches:
+              only: /.*/
+      
+      # Plan on feature branches
+      - terraform-plan-okta:
+          requires:
+            - validate-iam-configs
+            - security-scan
+          filters:
+            branches:
+              ignore: [main, production]
+      
+      # Apply only on main branch
+      - terraform-apply-okta:
+          requires:
+            - validate-iam-configs
+            - security-scan
+          filters:
+            branches:
+              only: [main]
+      
+      # Sync users after successful terraform apply
+      - sync-okta-users:
+          requires:
+            - terraform-apply-okta
+          filters:
+            branches:
+              only: [main]
+      
+      # Weekly compliance report
+      - generate-compliance-report:
+          filters:
+            branches:
+              only: [main]
+          triggers:
+            - schedule:
+                cron: "0 9 * * 1"  # Every Monday at 9 AM
+                filters:
+                  branches:
+                    only: [main]
+
+  emergency-provisioning:
+    jobs:
+      - validate-iam-configs:
+          filters:
+            branches:
+              only: /emergency\/.*/
+      
+      - terraform-plan-okta:
+          requires:
+            - validate-iam-configs
+          filters:
+            branches:
+              only: /emergency\/.*/
+      
+      - hold-for-approval:
+          type: approval
+          requires:
+            - terraform-plan-okta
+          filters:
+            branches:
+              only: /emergency\/.*/
+      
+      - terraform-apply-okta:
+          requires:
+            - hold-for-approval
+          filters:
+            branches:
+              only: /emergency\/.*/
+      
+      - sync-okta-users:
+          requires:
+            - terraform-apply-okta
+          filters:
+            branches:
+              only: /emergency\/.*/
+      
+      - slack/notify:
+          requires:
+            - sync-okta-users
+          template: basic_success_1
+          channel: '#security-alerts'
+          mentions: '@security-team @iam-admins'
+          filters:
+            branches:
+              only: /emergency\/.*/

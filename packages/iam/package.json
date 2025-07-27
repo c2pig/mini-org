@@ -1,0 +1,61 @@
+{
+  "name": "@mini-org/iam",
+  "version": "1.0.0",
+  "description": "Identity and Access Management package for mini-org platform",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "validate": "python scripts/validate-config.py --path configs/",
+    "validate:users": "python scripts/validate-config.py --path configs/users/",
+    "validate:apps": "python scripts/validate-config.py --path configs/applications/",
+    "validate:policies": "python scripts/validate-config.py --check-policies",
+    "provision": "python scripts/provision-user.py --sync-all",
+    "sync-groups": "python scripts/sync-groups.py",
+    "configure-sso": "python scripts/configure-sso.py",
+    "compliance-report": "python scripts/compliance-report.py --output reports/access-review.html",
+    "terraform:init": "cd terraform/okta && terraform init",
+    "terraform:plan": "cd terraform/okta && terraform plan",
+    "terraform:apply": "cd terraform/okta && terraform apply",
+    "terraform:plan:dev": "cd terraform/okta && terraform plan -var-file='environments/dev.tfvars'",
+    "terraform:apply:dev": "cd terraform/okta && terraform apply -var-file='environments/dev.tfvars'",
+    "terraform:plan:prod": "cd terraform/okta && terraform plan -var-file='environments/production.tfvars'",
+    "terraform:apply:prod": "cd terraform/okta && terraform apply -var-file='environments/production.tfvars'",
+    "test": "python -m pytest tests/",
+    "lint": "bandit -r scripts/",
+    "security-scan": "bandit -r scripts/ && safety check"
+  },
+  "keywords": [
+    "iam",
+    "identity",
+    "access-management", 
+    "okta",
+    "sso",
+    "terraform",
+    "gitops"
+  ],
+  "author": "Mini-Org Platform Team",
+  "license": "MIT",
+  "dependencies": {
+    "okta-sdk-python": "^2.9.0",
+    "requests": "^2.31.0",
+    "pyyaml": "^6.0",
+    "jsonschema": "^4.19.0"
+  },
+  "devDependencies": {
+    "bandit": "^1.7.5",
+    "safety": "^2.3.0",
+    "pytest": "^7.4.0"
+  },
+  "engines": {
+    "python": ">=3.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/c2pig/mini-org.git",
+    "directory": "packages/iam"
+  },
+  "bugs": {
+    "url": "https://github.com/c2pig/mini-org/issues"
+  },
+  "homepage": "https://github.com/c2pig/mini-org/tree/main/packages/iam"
+}

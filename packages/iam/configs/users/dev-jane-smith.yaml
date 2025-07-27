@@ -1,0 +1,41 @@
+apiVersion: iam.mini-org.com/v1
+kind: User
+metadata:
+  name: jane.smith
+  environment: production
+  createdBy: hr-team
+  createdAt: "2024-02-01T09:30:00Z"
+spec:
+  profile:
+    firstName: Jane
+    lastName: Smith
+    email: jane.smith@mini-org.com
+    department: Engineering
+    title: Senior Developer
+    employeeId: "EMP002"
+    manager: "john.doe@mini-org.com"
+    startDate: "2024-02-01"
+    skills: ["react", "typescript", "terraform", "aws"]
+  roles:
+    - developer
+  groups:
+    - developers
+    - frontend-team
+    - deployment-team
+  applications:
+    - cloudflare-developer
+    - databricks-workspace
+    - segment-developer
+    - oracle-readonly
+  accessPolicy:
+    mfaRequired: true
+    sessionTimeout: 12h
+    ipRestrictions:
+      - "10.0.0.0/8"  # VPN range
+      - "192.168.1.0/24"  # Office network
+    allowedTimeframes:
+      - "monday-sunday:00:00-23:59"  # Flexible hours for developers
+  notifications:
+    onboarding: true
+    deploymentAlerts: true
+    securityUpdates: true

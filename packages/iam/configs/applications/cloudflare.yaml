@@ -1,0 +1,58 @@
+apiVersion: iam.mini-org.com/v1
+kind: Application
+metadata:
+  name: cloudflare
+  displayName: "Cloudflare Dashboard"
+  description: "CDN, DNS, and security services management"
+spec:
+  type: saml
+  provider: okta
+  config:
+    entityId: "cloudflare.com"
+    ssoUrl: "https://dash.cloudflare.com/sso/saml"
+    audienceRestriction: "cloudflare.com"
+    nameIdFormat: "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
+    signatureAlgorithm: "RSA_SHA256"
+  attributeMapping:
+    email: "user.email"
+    firstName: "user.firstName"
+    lastName: "user.lastName"
+    department: "user.department"
+  roleMapping:
+    admin:
+      cloudflareRole: "Administrator"
+      permissions:
+        - "zone:edit"
+        - "dns:edit"
+        - "ssl:edit"
+        - "analytics:read"
+        - "billing:read"
+    developer:
+      cloudflareRole: "User"
+      permissions:
+        - "zone:read"
+        - "dns:edit"
+        - "analytics:read"
+    operator:
+      cloudflareRole: "Analytics"
+      permissions:
+        - "analytics:read"
+        - "logs:read"
+        - "zone:read"
+    read-only:
+      cloudflareRole: "ReadOnly"
+      permissions:
+        - "analytics:read"
+        - "zone:read"
+    emergency:
+      cloudflareRole: "Super Administrator"
+      permissions:
+        - "*:*"
+      requiresApproval: true
+  security:
+    enforceSSO: true
+    sessionTimeout: "8h"
+    requireMFA: true
+    ipWhitelist:
+      - "10.0.0.0/8"
+      - "192.168.1.0/24"
