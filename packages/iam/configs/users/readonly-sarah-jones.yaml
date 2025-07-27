@@ -1,0 +1,41 @@
+apiVersion: iam.mini-org.com/v1
+kind: User
+metadata:
+  name: sarah.jones
+  environment: production
+  createdBy: hr-team
+  createdAt: "2024-02-10T11:00:00Z"
+spec:
+  profile:
+    firstName: Sarah
+    lastName: Jones
+    email: sarah.jones@mini-org.com
+    department: Business Intelligence
+    title: Data Analyst
+    employeeId: "EMP004"
+    manager: "cto@mini-org.com"
+    startDate: "2024-02-10"
+    skills: ["sql", "analytics", "reporting", "business-intelligence"]
+  roles:
+    - read-only
+  groups:
+    - analysts
+    - read-only-users
+    - business-intelligence
+  applications:
+    - cloudflare-readonly
+    - databricks-viewer
+    - segment-readonly
+    - oracle-readonly
+  accessPolicy:
+    mfaRequired: true
+    sessionTimeout: 8h
+    ipRestrictions:
+      - "10.0.0.0/8"  # VPN range
+      - "192.168.1.0/24"  # Office network
+    allowedTimeframes:
+      - "monday-friday:08:00-17:00"  # Business hours only
+  notifications:
+    onboarding: true
+    reportUpdates: true
+    dataQualityAlerts: false

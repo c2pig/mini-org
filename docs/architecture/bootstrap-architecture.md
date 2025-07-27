@@ -30,41 +30,38 @@ The bootstrap phase implements the foundational components for the mini-org-capa
 
 ## Architecture Diagram
 
-```
-┌─────────────────┐    ┌─────────────────┐
-│   Cloudflare    │    │      Users      │
-│   Edge Network  │◄───┤   (Workforce &  │
-│                 │    │    Customers)   │
-└─────────┬───────┘    └─────────────────┘
-          │
-          ▼
-┌─────────────────────────────────────────┐
-│              AWS VPC                    │
-│  ┌─────────────┐    ┌─────────────┐     │
-│  │   Public    │    │   Private   │     │
-│  │  Subnets    │    │  Subnets    │     │
-│  │             │    │             │     │
-│  │ ┌─────────┐ │    │ ┌─────────┐ │     │
-│  │ │   ALB   │ │    │ │   EKS   │ │     │
-│  │ └─────────┘ │    │ │ Cluster │ │     │
-│  └─────────────┘    │ └─────────┘ │     │
-│                     │             │     │
-│                     │ ┌─────────┐ │     │
-│                     │ │   DB    │ │     │
-│                     │ └─────────┘ │     │
-│                     └─────────────┘     │
-└─────────────────────────────────────────┘
-          │
-          ▼
-┌─────────────────────────────────────────┐
-│           S3 Data Platform              │
-│  ┌─────────────┐ ┌─────────────┐       │
-│  │ Data Lake   │ │  App Data   │       │
-│  └─────────────┘ └─────────────┘       │
-│  ┌─────────────┐                       │
-│  │   Backups   │                       │
-│  └─────────────┘                       │
-└─────────────────────────────────────────┘
+```mermaid
+graph TB
+    USERS[Users<br/>Workforce & Customers]
+    
+    subgraph "Edge Layer"
+        CLOUDFLARE[Cloudflare Edge Network<br/>• CDN<br/>• WAF<br/>• DDoS Protection<br/>• SSL/TLS Termination]
+    end
+    
+    subgraph "AWS VPC"
+        subgraph "Public Subnets"
+            ALB[Application Load Balancer]
+        end
+        
+        subgraph "Private Subnets"
+            EKS[EKS Cluster<br/>Kubernetes Workloads]
+            DB[(Database<br/>RDS/Aurora)]
+        end
+    end
+    
+    subgraph "Data Platform"
+        S3_LAKE[(S3 Data Lake<br/>Raw Data Storage)]
+        S3_APP[(S3 App Data<br/>Application Assets)]
+        S3_BACKUP[(S3 Backups<br/>Disaster Recovery)]
+    end
+    
+    USERS --> CLOUDFLARE
+    CLOUDFLARE --> ALB
+    ALB --> EKS
+    EKS --> DB
+    EKS --> S3_LAKE
+    EKS --> S3_APP
+    EKS --> S3_BACKUP
 ```
 
 ## Security Model

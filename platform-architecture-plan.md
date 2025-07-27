@@ -118,6 +118,424 @@ This document outlines a comprehensive platform architecture using a **managed s
 - **Incident Management**: PagerDuty free tier, Opsgenie
 - **Documentation**: Confluence, GitBook
 
+## Kubernetes Architecture
+
+### Container Platform Overview
+
+The Kubernetes architecture follows a GitOps-first approach with managed EKS and comprehensive application lifecycle management.
+
+```mermaid
+graph TB
+    subgraph "Developer Experience"
+        DEV[Developer Workstation]
+        DEV --> |kubectl<br/>helm<br/>kustomize<br/>backstage| TOOLS[Development Tools]
+    end
+    
+    subgraph "GitOps Repository"
+        REPO[Git Repository]
+        REPO --> |k8s manifests<br/>helm charts<br/>kustomize overlays| MANIFESTS[Kubernetes Manifests]
+    end
+    
+    subgraph "Production EKS Cluster"
+        ARGOCD[ArgoCD]
+        ARGOCD --> |Auto-Sync<br/>Health Monitor<br/>Drift Detection| DEPLOY[Application Deployment]
+        
+        subgraph "Cluster Namespaces"
+            subgraph "Infrastructure Tier"
+                INGRESS[ingress-system<br/>• Nginx Ingress<br/>• Cert Manager<br/>• External DNS]
+                PLATFORM[platform<br/>• ArgoCD<br/>• Backstage<br/>• Vault<br/>• Secrets Operator]
+                MONITOR[monitoring<br/>• Prometheus<br/>• Grafana<br/>• Loki<br/>• AlertManager]
+            end
+            
+            subgraph "Application Tier"
+                CUSTOMER[customer-services<br/>• Customer API<br/>• User Management]
+                PAYMENT[payment-services<br/>• Payment Gateway<br/>• Billing]
+                ANALYTICS[analytics-services<br/>• Data Pipeline<br/>• Reporting]
+                MESSAGING[messaging-services<br/>• Event Bus<br/>• Notifications]
+                WORKFLOW[workflow-services<br/>• Orchestration<br/>• Automation]
+            end
+        end
+        
+        subgraph "Worker Nodes"
+            NODE1[Worker Node 1<br/>m5.large - AZ-1a<br/>Core Services]
+            NODE2[Worker Node 2<br/>m5.large - AZ-1b<br/>Core Services]
+            NODE3[Worker Node 3<br/>m5.large - AZ-1c<br/>Core Services]
+            SPOT[Spot Instance Pool<br/>Dev/Test Workloads<br/>Batch Jobs<br/>Non-critical Services]
+        end
+    end
+    
+    DEV --> |Git Push| REPO
+    REPO --> |GitOps Sync| ARGOCD
+    DEPLOY --> INGRESS
+    DEPLOY --> PLATFORM
+    DEPLOY --> MONITOR
+    DEPLOY --> CUSTOMER
+    DEPLOY --> PAYMENT
+    DEPLOY --> ANALYTICS
+    DEPLOY --> MESSAGING
+    DEPLOY --> WORKFLOW
+```
+
+### Application Deployment Flow
+
+```mermaid
+graph LR
+    subgraph "1. Developer Experience"
+        BACKSTAGE[Backstage Dev Portal<br/>• Service Catalog<br/>• Templates<br/>• Documentation<br/>• Health Status]
+        GITHUB[GitHub Repository<br/>• Application Code<br/>• K8s Manifests]
+        CI[CI Pipeline<br/>• Build Container<br/>• Run Tests<br/>• Security Scan<br/>• Push to Registry<br/>• Update Manifest]
+        
+        BACKSTAGE --> GITHUB
+        GITHUB --> CI
+    end
+    
+    subgraph "2. GitOps Deployment"
+        ARGOCD[ArgoCD<br/>• Git Sync<br/>• Health Check<br/>• Auto Heal<br/>• Rollback<br/>• Progressive Delivery]
+        
+        subgraph "EKS Cluster"
+            NAMESPACE[Namespace: customer-api]
+            DEPLOYMENT[• Deployment<br/>• Service<br/>• ConfigMap<br/>• Secret<br/>• Ingress]
+        end
+        
+        subgraph "External Services"
+            RDS[(RDS Database)]
+            REDIS[(ElastiCache Redis)]
+            S3[(S3 File Storage)]
+            SQS[(SQS Message Queue)]
+            LOGS[(CloudWatch Logs)]
+        end
+        
+        ARGOCD --> NAMESPACE
+        NAMESPACE --> DEPLOYMENT
+        DEPLOYMENT --> RDS
+        DEPLOYMENT --> REDIS
+        DEPLOYMENT --> S3
+        DEPLOYMENT --> SQS
+        DEPLOYMENT --> LOGS
+    end
+    
+    subgraph "3. Monitoring & Observability"
+        PROMETHEUS[Prometheus<br/>• Metrics Collection<br/>• Service Discovery<br/>• Alert Rules]
+        GRAFANA[Grafana<br/>• Application Dashboards<br/>• Infrastructure Metrics<br/>• Business KPIs<br/>• SLA Tracking]
+        ALERTMGR[Alert Manager<br/>• Slack Notifications<br/>• PagerDuty Escalation<br/>• Email Alerts<br/>• Incident Response]
+        
+        PROMETHEUS --> GRAFANA
+        GRAFANA --> ALERTMGR
+    end
+    
+    CI --> |Git Push| ARGOCD
+    DEPLOYMENT --> |Metrics| PROMETHEUS
+```
+
+### Namespace Organization
+
+```yaml
+# kubernetes/base/namespaces.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: platform
+  labels:
+    purpose: platform-services
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ingress-system
+  labels:
+    purpose: ingress-controllers
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    purpose: observability
+    tier: infrastructure
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: customer-services
+  labels:
+    purpose: business-services
+    tier: application
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: internal-services
+  labels:
+    purpose: internal-tools
+    tier: application
+```
+
+### Security Architecture
+
+```mermaid
+graph TB
+    subgraph "Identity & Access Security"
+        OKTA[Okta SSO<br/>• Workforce Identity<br/>• MFA<br/>• Lifecycle Management<br/>• Groups]
+        IAM[AWS IAM<br/>• EKS Access<br/>• Cross Account<br/>• Assume Role]
+        RBAC[K8s RBAC<br/>• Roles<br/>• Role Bindings<br/>• Service Accounts<br/>• Namespace Isolation]
+        POD[Pod Security<br/>• Security Context<br/>• Network Policies<br/>• Resource Limits]
+        
+        OKTA --> IAM
+        IAM --> RBAC
+        RBAC --> POD
+    end
+    
+    subgraph "Network Security"
+        WAF[Cloudflare WAF<br/>• DDoS Protection<br/>• Bot Mitigation<br/>• IP Filtering]
+        ALB[AWS ALB<br/>• SSL/TLS<br/>• Rate Limiting<br/>• Geo Blocking]
+        NET[Network Policies<br/>• Calico<br/>• Namespace Isolation<br/>• Pod-to-Pod Rules]
+        MESH[Service Mesh<br/>• mTLS<br/>• Traffic Policies<br/>• Observability]
+        
+        WAF --> ALB
+        ALB --> NET
+        NET --> MESH
+    end
+    
+    subgraph "Data Protection"
+        SECRETS[Secrets Management<br/>• External Secrets Operator<br/>• Vault Integration<br/>• Rotation<br/>• Audit]
+        CONFIG[Config Management<br/>• ConfigMaps<br/>• Kustomize<br/>• Helm Values<br/>• Env Injection]
+        STORAGE[Persistent Storage<br/>• EBS Encryption<br/>• EFS Encryption<br/>• Backup Strategy]
+        IMAGE[Image Security<br/>• Scanning<br/>• Signing<br/>• RBAC<br/>• Admission Control<br/>• Policy Engine]
+        
+        SECRETS --> CONFIG
+        CONFIG --> STORAGE
+        STORAGE --> IMAGE
+    end
+    
+    POD --> NET
+    RBAC --> SECRETS
+```
+
+### Repository Structure for Kubernetes
+
+```
+packages/
+└── kubernetes/
+    ├── package.json              # Package definition
+    ├── README.md                 # Documentation
+    ├── base/                     # Base Kustomize configurations
+    │   ├── kustomization.yaml    # Base kustomization
+    │   ├── namespaces.yaml       # Namespace definitions
+    │   ├── rbac.yaml            # RBAC configurations
+    │   └── network-policies.yaml # Network security
+    ├── overlays/                 # Environment-specific overlays
+    │   ├── dev/
+    │   │   ├── kustomization.yaml
+    │   │   ├── resource-quotas.yaml
+    │   │   └── ingress-patch.yaml
+    │   ├── staging/
+    │   │   ├── kustomization.yaml
+    │   │   ├── hpa-patch.yaml
+    │   │   └── monitoring-config.yaml
+    │   └── production/
+    │       ├── kustomization.yaml
+    │       ├── security-policies.yaml
+    │       ├── backup-config.yaml
+    │       └── disaster-recovery.yaml
+    ├── applications/             # ArgoCD Application definitions
+    │   ├── platform/
+    │   │   ├── argocd.yaml
+    │   │   ├── backstage.yaml
+    │   │   ├── external-secrets.yaml
+    │   │   └── cert-manager.yaml
+    │   ├── monitoring/
+    │   │   ├── prometheus.yaml
+    │   │   ├── grafana.yaml
+    │   │   ├── loki.yaml
+    │   │   └── alert-manager.yaml
+    │   └── business-services/
+    │       ├── customer-api.yaml
+    │       ├── payment-service.yaml
+    │       ├── analytics-service.yaml
+    │       └── notification-service.yaml
+    ├── charts/                   # Helm charts for complex applications
+    │   ├── backstage/
+    │   ├── monitoring-stack/
+    │   └── business-service-template/
+    └── scripts/                  # Automation and utilities
+        ├── setup-cluster.sh
+        ├── deploy-app.sh
+        ├── backup-restore.sh
+        └── security-scan.sh
+```
+
+### Platform Services Configuration
+
+```yaml
+# packages/kubernetes/applications/platform/backstage.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: backstage
+  namespace: argocd
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/c2pig/mini-org.git
+    path: packages/kubernetes/charts/backstage
+    targetRevision: main
+    helm:
+      values: |
+        backstage:
+          image:
+            repository: backstage/backstage
+            tag: latest
+          ingress:
+            enabled: true
+            annotations:
+              cert-manager.io/cluster-issuer: letsencrypt-prod
+              nginx.ingress.kubernetes.io/ssl-redirect: "true"
+            hosts:
+              - host: backstage.mini-org.com
+                paths:
+                  - path: /
+                    pathType: Prefix
+        postgresql:
+          enabled: true
+          persistence:
+            enabled: true
+            size: 20Gi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: platform
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+```
+
+### Monitoring Stack
+
+```yaml
+# packages/kubernetes/applications/monitoring/prometheus.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prometheus-stack
+  namespace: argocd
+spec:
+  project: monitoring
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: "51.2.0"
+    helm:
+      values: |
+        prometheus:
+          prometheusSpec:
+            retention: 30d
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: gp3
+                  accessModes: ["ReadWriteOnce"]
+                  resources:
+                    requests:
+                      storage: 100Gi
+        grafana:
+          enabled: true
+          adminPassword: "${GRAFANA_ADMIN_PASSWORD}"
+          ingress:
+            enabled: true
+            annotations:
+              cert-manager.io/cluster-issuer: letsencrypt-prod
+            hosts:
+              - grafana.mini-org.com
+        alertmanager:
+          alertmanagerSpec:
+            storage:
+              volumeClaimTemplate:
+                spec:
+                  storageClassName: gp3
+                  accessModes: ["ReadWriteOnce"]
+                  resources:
+                    requests:
+                      storage: 20Gi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+```
+
+### Self-Service Application Template
+
+```yaml
+# packages/kubernetes/charts/business-service-template/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.service.name }}
+  namespace: {{ .Values.service.namespace }}
+  labels:
+    app: {{ .Values.service.name }}
+    version: {{ .Values.service.version }}
+    team: {{ .Values.service.team }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.service.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.service.name }}
+        version: {{ .Values.service.version }}
+    spec:
+      serviceAccountName: {{ .Values.service.name }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: {{ .Values.service.name }}
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        ports:
+        - containerPort: {{ .Values.service.port }}
+        env:
+        - name: PORT
+          value: "{{ .Values.service.port }}"
+        - name: ENVIRONMENT
+          value: {{ .Values.environment }}
+        envFrom:
+        - secretRef:
+            name: {{ .Values.service.name }}-secrets
+        - configMapRef:
+            name: {{ .Values.service.name }}-config
+        resources:
+          requests:
+            memory: {{ .Values.resources.requests.memory }}
+            cpu: {{ .Values.resources.requests.cpu }}
+          limits:
+            memory: {{ .Values.resources.limits.memory }}
+            cpu: {{ .Values.resources.limits.cpu }}
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: {{ .Values.service.port }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: {{ .Values.service.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 5
+```
+
 ## Implementation Roadmap
 
 ### Phase 1: Foundation (Week 1-2)

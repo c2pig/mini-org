@@ -1,0 +1,40 @@
+apiVersion: iam.mini-org.com/v1
+kind: User
+metadata:
+  name: john.doe
+  environment: production
+  createdBy: platform-team
+  createdAt: "2024-01-15T10:00:00Z"
+spec:
+  profile:
+    firstName: John
+    lastName: Doe
+    email: john.doe@mini-org.com
+    department: Platform Engineering
+    title: Platform Administrator
+    employeeId: "EMP001"
+    manager: "cto@mini-org.com"
+    startDate: "2024-01-15"
+  roles:
+    - admin
+  groups:
+    - platform-admins
+    - infrastructure-team
+    - security-team
+  applications:
+    - cloudflare-admin
+    - databricks-admin
+    - segment-admin
+    - oracle-admin
+  accessPolicy:
+    mfaRequired: true
+    sessionTimeout: 8h
+    ipRestrictions:
+      - "10.0.0.0/8"  # VPN range
+      - "192.168.1.0/24"  # Office network
+    allowedTimeframes:
+      - "monday-friday:08:00-18:00"
+  notifications:
+    onboarding: true
+    policyChanges: true
+    accessReviews: true

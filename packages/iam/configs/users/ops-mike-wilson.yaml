@@ -1,0 +1,43 @@
+apiVersion: iam.mini-org.com/v1
+kind: User
+metadata:
+  name: mike.wilson
+  environment: production
+  createdBy: hr-team
+  createdAt: "2024-01-20T14:15:00Z"
+spec:
+  profile:
+    firstName: Mike
+    lastName: Wilson
+    email: mike.wilson@mini-org.com
+    department: Operations
+    title: Site Reliability Engineer
+    employeeId: "EMP003"
+    manager: "john.doe@mini-org.com"
+    startDate: "2024-01-20"
+    skills: ["kubernetes", "monitoring", "incident-response", "terraform"]
+  roles:
+    - operator
+  groups:
+    - operations
+    - sre-team
+    - on-call-engineers
+  applications:
+    - cloudflare-analytics
+    - oracle-monitoring
+    - databricks-queries
+    - segment-readonly
+  accessPolicy:
+    mfaRequired: true
+    sessionTimeout: 10h
+    ipRestrictions:
+      - "10.0.0.0/8"  # VPN range
+      - "192.168.1.0/24"  # Office network
+      - "0.0.0.0/0"  # Allow from anywhere for on-call
+    allowedTimeframes:
+      - "monday-sunday:00:00-23:59"  # 24/7 for on-call
+  notifications:
+    onboarding: true
+    incidentAlerts: true
+    maintenanceWindows: true
+    performanceAlerts: true

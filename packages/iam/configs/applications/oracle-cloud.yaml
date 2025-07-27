@@ -1,0 +1,73 @@
+apiVersion: iam.mini-org.com/v1
+kind: Application
+metadata:
+  name: oracle-cloud
+  displayName: "Oracle Cloud Infrastructure"
+  description: "Cloud computing platform and infrastructure services"
+spec:
+  type: saml
+  provider: okta
+  config:
+    entityId: "oracle.com/oracleidentitycs_miniorg"
+    ssoUrl: "https://idcs-xxx.identity.oraclecloud.com/fed"
+    audienceRestriction: "https://idcs-xxx.identity.oraclecloud.com"
+    nameIdFormat: "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"
+    signatureAlgorithm: "RSA_SHA256"
+    acsUrl: "https://idcs-xxx.identity.oraclecloud.com/fed/v1/sp/sso"
+  attributeMapping:
+    email: "user.email"
+    firstName: "user.firstName"
+    lastName: "user.lastName"
+    groups: "user.ociGroups"
+  roleMapping:
+    admin:
+      ociGroups:
+        - "OCI-Administrators"
+        - "Tenancy-Administrators"
+      permissions:
+        - "tenancy:admin"
+        - "compartment:admin"
+        - "instance:admin"
+        - "network:admin"
+        - "storage:admin"
+        - "database:admin"
+    operator:
+      ociGroups:
+        - "OCI-Operators"
+        - "Monitoring-Users"
+      permissions:
+        - "instance:read"
+        - "monitoring:read"
+        - "logging:read"
+        - "metrics:read"
+    read-only:
+      ociGroups:
+        - "OCI-ReadOnly"
+        - "Auditors"
+      permissions:
+        - "tenancy:read"
+        - "compartment:read"
+        - "audit:read"
+    emergency:
+      ociGroups:
+        - "OCI-Emergency"
+        - "Break-Glass-Access"
+      permissions:
+        - "tenancy:admin"
+        - "emergency:access"
+      requiresApproval: true
+      autoExpiry: "2h"
+  security:
+    enforceSSO: true
+    sessionTimeout: "8h"
+    requireMFA: true
+    conditionalAccess:
+      - condition: "network.ip in ['10.0.0.0/8', '192.168.1.0/24']"
+        action: "allow"
+      - condition: "user.role == 'emergency'"
+        action: "require_approval"
+  tenancySettings:
+    defaultCompartment: "mini-org-production"
+    regionRestrictions:
+      - "us-ashburn-1"
+      - "us-phoenix-1"
